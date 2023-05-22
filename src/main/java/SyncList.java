@@ -9,11 +9,16 @@ public class SyncList extends SortList {
 
         Entry prev = this.head;
         Entry curr = prev.next;
-        while (curr.object.compareTo(obj) < 0) {
+        if (this.head == null) {
+            // if the List is empty
+            containFailures++;
+            return false;
+        }
+        while (curr != null &&curr.object.compareTo(obj) < 0) {
             prev = curr;
             curr = prev.next;
         }
-        if (curr.object.equals(obj) || prev.object.equals(obj)) {
+        if (curr != null &&curr.object.equals(obj) || prev.object.equals(obj)) {
             return false;
         } else {
             Entry newEntry = new Entry(obj);
@@ -30,11 +35,16 @@ public class SyncList extends SortList {
     public synchronized boolean remove(Integer obj) {
         Entry prev = this.head;
         Entry curr = prev.next;
-        while (curr.object.compareTo(obj) < 0) {
+        if (this.head == null) {
+            // if the List is empty
+            removeFailures++;
+            return false;
+        }
+        while (curr != null &&curr.object.compareTo(obj) < 0) {
             prev = curr;
             curr = prev.next;
         }
-        if (curr.object.equals(obj)) {
+        if (curr != null &&curr.object.equals(obj)) {
             prev.next = curr.next;
             listLengthAfterRemove--;
             removeSuccesses++;
@@ -50,11 +60,16 @@ public class SyncList extends SortList {
     public synchronized boolean contain(Integer obj) {
         Entry prev = this.head;
         Entry curr = prev.next;
+        if (this.head == null) {
+            // if the List is empty
+            containFailures++;
+            return false;
+        }
         while (curr.object.compareTo(obj) < 0) {
             prev = curr;
             curr = prev.next;
         }
-        if (curr.object.equals(obj) || prev.object.equals(obj)) {
+        if (curr != null &&curr.object.equals(obj) || prev.object.equals(obj)) {
             containSuccesses++;
             return true;
         } else {

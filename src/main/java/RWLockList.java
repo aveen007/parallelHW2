@@ -18,8 +18,8 @@ public class RWLockList extends SortList {
                 prev = curr;
                 curr = prev.next;
             }
-            if (curr.object.equals(obj) || prev.object.equals(obj)) {
-                removeFailures++;
+            if (curr != null && curr.object.equals(obj) || prev.object.equals(obj)) {
+
                 return false;
             } else {
                 Entry newEntry = new Entry(obj);
@@ -27,7 +27,7 @@ public class RWLockList extends SortList {
                 prev.next = newEntry;
                 this.listLengthAfterAdds += 1;
                 this.listLengthAfterRemove += 1;
-                removeSuccesses++;
+
                 return true;
             }
         } finally {
@@ -37,16 +37,15 @@ public class RWLockList extends SortList {
 
     @Override
     public boolean remove(Integer obj) {
-       // try {
-           //   lock.writeLock().lock();
+
             Entry prev = this.head;
             Entry curr = prev.next;
-            while (curr.object.compareTo(obj) < 0) {
+            while (curr!=null&&curr.object.compareTo(obj) < 0) {
                 prev = curr;
                 curr = prev.next;
             }
-            if (curr.object.equals(obj)) {
-                lock.writeLock().lock();
+            if ( curr!=null&&curr.object.equals(obj)) {
+                curr.lock.writeLock().lock();
                 try {
                     if (prev == null) {
                         head = curr.next;
@@ -55,34 +54,40 @@ public class RWLockList extends SortList {
                     }
 
                     listLengthAfterRemove--;
+                    removeSuccesses++;
                 return true;
                 }
                 finally {
-                         lock.writeLock().unlock();
+
+                         curr.lock.writeLock().unlock();
 
                 }
 
             } else {
+                removeFailures++;
                 return false;
             }
-       /* } finally {
-                 lock.writeLock().unlock();
 
-        }*/
 
     }
 
     @Override
     public boolean contain(Integer obj) {
         try {
+            lock.writeLock().lock();
             lock.readLock().lock();
+            if (this.head.next == null) {
+                // if the List is empty
+                containFailures++;
+                return false;
+            }
             Entry prev = this.head;
             Entry curr = prev.next;
-            while (curr.object.compareTo(obj) < 0) {
+            while (curr != null && curr.object.compareTo(obj) < 0) {
                 prev = curr;
                 curr = prev.next;
             }
-            if (curr.object.equals(obj) || prev.object.equals(obj)) {
+            if (curr != null && curr.object.equals(obj) || prev.object.equals(obj)) {
                 containSuccesses++;
                 return true;
             } else {
@@ -90,6 +95,7 @@ public class RWLockList extends SortList {
                 return false;
             }
         } finally {
+            lock.writeLock().unlock();
             lock.readLock().unlock();
         }
     }
